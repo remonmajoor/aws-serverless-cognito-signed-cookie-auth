@@ -1,0 +1,5 @@
+project_name = "serverless-website-in-s3"
+aws_region = "us-east-1"
+domain_name = "example.mydomain.com"
+hosted_zone_id = ""
+profile = "default"
