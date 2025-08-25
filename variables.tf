@@ -18,6 +18,16 @@ variable "domain_name" {
   type        = string
 }
 
+variable "cloudfront_domain_name" {
+  description = "cheers mate"
+  type        = string
+}
+
+variable "cognito_domain_name" {
+  description = "FQDN to serve Cognito"
+  type        = string
+}
+
 variable "hosted_zone_id" {
   description = "Route53 Hosted Zone ID that contains the domain (e.g., Z123456...)."
   type        = string
@@ -45,4 +55,48 @@ variable "tags" {
   description = "Tags to apply to supported resources."
   type        = map(string)
   default     = {}
+}
+
+variable "rsa_bits" {
+  description = "Key pair for signing cookies."
+  type = number
+  default = 2048
+}
+
+variable "cloudfront_restricted_path" {
+  description = "Restricted path by Cloudfront"
+  type = string
+  default = "/restricted/*"
+}
+
+variable "allowed_origins" {
+  description = "Restricted path by Cloudfront"
+  type = list(string)
+}
+
+variable "callback_urls" {
+  description = "Restricted path by Cloudfront"
+  type = list(string)
+  default = ["https://cloudfront.majoor.ovh/auth/callback.html"]
+}
+
+variable "logout_urls" {
+  description = "value"
+  type = list(string)
+  default = ["https://cloudfront.majoor.ovh/"]
+}
+
+variable "cognito_user" {
+  description = "Creation of a user in the cognito pool"
+  type = string
+}
+
+variable "cognito_user_email" {
+  description = "Creation of a user in the cognito pool"
+  type = string
+}
+
+variable "cognito_user_password" {
+  description = "Creation of a user in the cognito pool"
+  type = string
 }

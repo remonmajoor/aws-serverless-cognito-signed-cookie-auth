@@ -6,28 +6,69 @@ resource "aws_cloudfront_origin_access_control" "oac" {
   signing_protocol                  = "sigv4"
 }
 
+resource "aws_cloudfront_public_key" "cookie_signing" {
+  name        = "cookie-signing-pubkey"
+  comment     = "Public key for signed cookies"
+  encoded_key = tls_private_key.cookie_signing.public_key_pem
+}
+
+resource "aws_cloudfront_key_group" "trusted" {
+  name    = "trusted-cookie-signers"
+  items   = [aws_cloudfront_public_key.cookie_signing.id]
+  comment = "Key group used for signed cookies"
+}
+
 data "aws_cloudfront_cache_policy" "caching_optimized" {
   name = "Managed-CachingOptimized"
+}
+
+data "aws_cloudfront_cache_policy" "caching_disabled" {
+  name = "Managed-CachingDisabled"
+}
+
+data "aws_cloudfront_origin_request_policy" "all_viewer_except_host" {
+  name = "Managed-AllViewerExceptHostHeader"
 }
 
 data "aws_cloudfront_response_headers_policy" "security_headers" {
   name = "Managed-SecurityHeadersPolicy"
 }
 
-resource "aws_cloudfront_distribution" "this" {
+# If you already have these resources, reference them; otherwise set vars:
+#   var.api_id (apigw v2 api id) and var.api_stage ("prod" by default)
+
+resource "aws_cloudfront_distribution" "cloudfront_distribution" {
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "${var.project_name} static content via OAC"
-  aliases             = [var.domain_name]
+  aliases             = [var.cloudfront_domain_name]
   price_class         = var.price_class
   default_root_object = var.default_root_object
 
+  # --- Origin: S3 (site + /restricted/*) ---
   origin {
-    origin_id                  = "s3-origin"
-    domain_name                = aws_s3_bucket.site.bucket_regional_domain_name
-    origin_access_control_id   = aws_cloudfront_origin_access_control.oac.id
+    origin_id                = "s3-origin"
+    domain_name              = aws_s3_bucket.site.bucket_regional_domain_name
+    origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
   }
 
+  # --- NEW Origin: API Gateway (for /api/*) ---
+  # If you created API in this stack:
+  # domain_name = "${aws_apigatewayv2_api.http_api.api_id}.execute-api.${data.aws_region.current.name}.amazonaws.com"
+  # origin_path = "/${aws_apigatewayv2_stage.prod.name}"
+  origin {
+    origin_id   = "apigw-origin"
+    domain_name = "${aws_apigatewayv2_api.http.id}.execute-api.${var.aws_region}.amazonaws.com"
+
+    custom_origin_config {
+        origin_protocol_policy = "https-only"
+        http_port              = 80
+        https_port             = 443
+        origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  # --- Default behavior: S3 site ---
   default_cache_behavior {
     target_origin_id       = "s3-origin"
     viewer_protocol_policy = "redirect-to-https"
@@ -40,10 +81,37 @@ resource "aws_cloudfront_distribution" "this" {
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.security_headers.id
   }
 
+  # --- Keep your restricted path on S3 with signed cookies ---
+  ordered_cache_behavior {
+    path_pattern           = var.cloudfront_restricted_path   # e.g. "/restricted/*"
+    target_origin_id       = "s3-origin"
+    viewer_protocol_policy = "redirect-to-https"
+
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    #cache_policy_id  = data.aws_cloudfront_cache_policy.caching_optimized.id
+    cache_policy_id           = data.aws_cloudfront_cache_policy.caching_disabled.id  #TO REMOVE WHEN DONE DEBUGGING
+
+    # Enforce signed cookies for this path
+    trusted_key_groups = [aws_cloudfront_key_group.trusted.id]
+  }
+
+  # --- NEW: Route /api/* to API Gateway (no cache, forward auth/cookies/qs) ---
+  ordered_cache_behavior {
+    path_pattern           = "/api/*"
+    target_origin_id       = "apigw-origin"
+    viewer_protocol_policy = "redirect-to-https"
+
+    allowed_methods  = ["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
+    cached_methods   = ["GET", "HEAD"]
+
+    cache_policy_id           = data.aws_cloudfront_cache_policy.caching_disabled.id
+    origin_request_policy_id  = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
+    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.security_headers.id
+  }
+
   restrictions {
-    geo_restriction {
-      restriction_type = "none"
-    }
+    geo_restriction { restriction_type = "none" }
   }
 
   viewer_certificate {
@@ -52,8 +120,5 @@ resource "aws_cloudfront_distribution" "this" {
     minimum_protocol_version = "TLSv1.2_2021"
   }
 
-  tags = merge(var.tags, { Component = "cloudfront" })
-
-  # Ensure the certificate is issued before attaching it
   depends_on = [aws_acm_certificate_validation.cert]
 }

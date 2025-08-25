@@ -1,11 +1,11 @@
 resource "aws_acm_certificate" "cert" {
   provider          = aws.us_east_1
   domain_name       = var.domain_name
+  subject_alternative_names = ["*.${var.domain_name}"]
   validation_method = "DNS"
   lifecycle {
     create_before_destroy = true
   }
-  tags = merge(var.tags, { Component = "acm" })
 }
 
 resource "aws_route53_record" "cert_validation" {
@@ -21,10 +21,11 @@ resource "aws_route53_record" "cert_validation" {
   type    = each.value.type
   ttl     = 60
   records = [each.value.record]
+  allow_overwrite = true
 }
 
 resource "aws_acm_certificate_validation" "cert" {
-  provider                 = aws.us_east_1    #us_east_1 is MANDATORY for ACM because CloudFront is a global service
-  certificate_arn          = aws_acm_certificate.cert.arn
-  validation_record_fqdns  = [for r in aws_route53_record.cert_validation : r.fqdn]
+  provider                = aws.us_east_1 #us_east_1 is MANDATORY for ACM because CloudFront is a global service
+  certificate_arn         = aws_acm_certificate.cert.arn
+  validation_record_fqdns = [for r in aws_route53_record.cert_validation : r.fqdn]
 }

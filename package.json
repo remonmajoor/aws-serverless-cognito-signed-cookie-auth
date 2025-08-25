@@ -1,0 +1,30 @@
+{
+  "name": "static-website-in-s3-with-cloudfront",
+  "version": "1.0.0",
+  "description": "Building the infrastructure for hosting a static website in S3 and deliver with cloudfront",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/remonmajoor/static-website-in-S3-with-cloudfront.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/remonmajoor/static-website-in-S3-with-cloudfront/issues"
+  },
+  "homepage": "https://github.com/remonmajoor/static-website-in-S3-with-cloudfront#readme",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.152",
+    "@types/node": "^20.19.11",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.872.0"
+  }
+}

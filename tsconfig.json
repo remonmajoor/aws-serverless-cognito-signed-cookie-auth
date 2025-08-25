@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "rootDir": "src/lambda",
+    "outDir": "dist/lambda",
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["node", "aws-lambda"],
+    "noEmitOnError": true
+  },
+  "include": ["src/**/*.ts"]
+}

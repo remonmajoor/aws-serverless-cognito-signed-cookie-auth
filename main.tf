@@ -13,13 +13,18 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
   profile = var.profile
 }
 
 # CloudFront requires the certificate in us-east-1
 provider "aws" {
-  alias  = "us_east_1"
-  region = "us-east-1"
+  alias   = "us_east_1"
+  region  = "us-east-1"
   profile = var.profile
 }
+
+# Required for creating a key pair to sign cookies
+provider "tls" {}
+
+data "aws_caller_identity" "current" {}
