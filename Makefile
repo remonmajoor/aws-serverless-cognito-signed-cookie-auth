@@ -97,7 +97,7 @@ tf-destroy: tf-init
 # -----------------------------
 # Convenience
 # -----------------------------
-.PHONY: release help destroy bootstrap
+.PHONY: release help destroy bootstrap clean
 release: publish-frontend
 
 bootstrap: tf-apply
@@ -110,6 +110,9 @@ destroy:
 	@test "$(CONFIRM)" = "YES" || { \
 	  echo "Refusing to destroy. Run: CONFIRM=YES make destroy"; exit 2; }
 	$(MAKE) tf-destroy
+
+clean:
+	rm -rf $(FRONTEND_DIR)/.next $(FRONTEND_DIR)/out $(ISSUER_DIR)/dist $(ISSUER_DIR)/node_modules
 
 
 ifeq ($(MAKELEVEL),0)
