@@ -7,9 +7,9 @@ GIT_SHA         := $(shell git rev-parse --short HEAD)
 
 AWS_PROFILE     			?= default         					#Overwrite this in console when using makefile
 BUCKET_OUTPUT   			?= bucket_name    					#defined in outputs.tf
-COGNITO_ID      			?= cognito_id  #defined in outputs.tf
-COGNITO_DOMAIN_NAME         ?= cognito_domain_name  #defined in outputs.tf
-CLOUDFRONT_CALLBACK         ?= cloudfront_callback
+COGNITO_ID      			?= cognito_id  						#defined in outputs.tf
+COGNITO_DOMAIN_NAME         ?= cognito_domain_name  			#defined in outputs.tf
+CLOUDFRONT_CALLBACK         ?= cloudfront_callback				#defined in outputs.tf
 
 # Paths
 FRONTEND_DIR    := frontend/src

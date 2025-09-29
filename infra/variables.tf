@@ -77,13 +77,11 @@ variable "allowed_origins" {
 variable "callback_urls" {
   description = "Restricted path by Cloudfront"
   type = list(string)
-  default = ["https://cloudfront.majoor.ovh/auth/callback.html"]
 }
 
 variable "logout_urls" {
   description = "value"
   type = list(string)
-  default = ["https://cloudfront.majoor.ovh/"]
 }
 
 variable "cognito_user" {
