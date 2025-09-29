@@ -8,6 +8,22 @@ output "cloudfront_distribution_id" {
   description = "CloudFront distribution ID"
 }
 
+output "cognito_id" {
+  value       = aws_cognito_user_pool_client.app_client.id
+}
+
+output "cognito_domain_name" {
+  value       = var.cognito_domain_name
+}
+
+output "cloudfront_domain_name" {
+  value       = var.cloudfront_domain_name
+}
+
+output "cloudfront_callback" {
+  value       = one(var.callback_urls)
+}
+
 output "acm_certificate_arn" {
   value       = aws_acm_certificate_validation.cert.certificate_arn
   description = "Issued ACM certificate ARN in us-east-1"

@@ -1,3 +1,5 @@
+#### Cloudfront ####
+
 resource "aws_cloudfront_origin_access_control" "oac" {
   name                              = "${var.project_name}-oac"
   description                       = "OAC for S3 origin ${aws_s3_bucket.site.bucket}"
@@ -121,4 +123,111 @@ resource "aws_cloudfront_distribution" "cloudfront_distribution" {
   }
 
   depends_on = [aws_acm_certificate_validation.cert]
+}
+
+#### ACM ####
+
+resource "aws_acm_certificate" "cert" {
+  provider          = aws.us_east_1
+  domain_name       = var.domain_name
+  subject_alternative_names = ["*.${var.domain_name}"]
+  validation_method = "DNS"
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      type   = dvo.resource_record_type
+      record = dvo.resource_record_value
+    }
+  }
+  zone_id = var.hosted_zone_id
+  name    = each.value.name
+  type    = each.value.type
+  ttl     = 60
+  records = [each.value.record]
+  allow_overwrite = true
+}
+
+resource "aws_acm_certificate_validation" "cert" {
+  provider                = aws.us_east_1 #us_east_1 is MANDATORY for ACM because CloudFront is a global service
+  certificate_arn         = aws_acm_certificate.cert.arn
+  validation_record_fqdns = [for r in aws_route53_record.cert_validation : r.fqdn]
+}
+
+#### S3 ####
+
+data "aws_iam_policy_document" "site" {
+  statement {
+    sid = "AllowCloudFrontServicePrincipalReadOnly"
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.site.arn}/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values   = [aws_cloudfront_distribution.cloudfront_distribution.arn]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "site" {
+  bucket = aws_s3_bucket.site.id
+  policy = data.aws_iam_policy_document.site.json
+}
+
+resource "aws_s3_bucket" "site" {
+  bucket        = local.bucket_name
+  force_destroy = var.bucket_force_destroy
+}
+
+resource "aws_s3_bucket_versioning" "site" {
+  bucket = aws_s3_bucket.site.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "site" {
+  bucket = aws_s3_bucket.site.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "site" {
+  bucket                  = aws_s3_bucket.site.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+#### Route53 ####
+
+# I am not creating the hosted zone with Terraform, you will need an already created hostzed zone and domain name server
+resource "aws_route53_record" "cognito_cname" {
+  zone_id = var.hosted_zone_id
+  name    = var.cognito_domain_name
+  type    = "CNAME"
+  ttl     = 300
+  records = [aws_cognito_user_pool_domain.user_pool.cloudfront_distribution]
+}
+
+resource "aws_route53_record" "cloudfront_cname" {
+  zone_id = var.hosted_zone_id
+  name    = var.cloudfront_domain_name
+  type    = "CNAME"
+  ttl     = 300
+  records = [aws_cloudfront_distribution.cloudfront_distribution.domain_name]
 }

@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --accent: #2563eb;           /* brand blue */
+  --accent-2: #22c55e;         /* secondary (green) */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+} */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.page-glow {
+  position: relative;
+}
+
+/* Subtle warm glow */
+.page-glow::before {
+  content: "";
+  position: absolute;
+  inset: -60px -40px auto -40px;
+  height: 220px; /* smaller height so it doesn't reach the About section */
+  background:
+    radial-gradient(
+      500px 250px at 10% 30%,
+      rgba(255, 228, 196, 0.3), /* very light beige */
+      transparent 60%
+    ),
+    radial-gradient(
+      400px 200px at 60% -20%,
+      rgba(255, 214, 165, 0.3), /* softer amber */
+      transparent 60%
+    );
+  filter: blur(25px);
+  pointer-events: none;
+  z-index: 0;
+}

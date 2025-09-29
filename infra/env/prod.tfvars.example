@@ -1,0 +1,16 @@
+# general
+project_name = "prod-serverless-app"                    # Enter your project name (has to be unique -> S3 bucket)
+aws_region = "eu-west-3"                                # Enter your aws region
+profile = "Prod"                                        # Enter your aws profile
+
+# Cloudfront
+domain_name = "example.com"                             # Enter your root domain (pre-requesite)
+cloudfront_domain_name = "cloudfront.example.com"       # Define your cloudfront domain
+cognito_domain_name = "cognito.example.com"             # Define your cognito domain
+hosted_zone_id = "XXXXXXXXXXXXXXXXXXXXX"                # Enter your own hosted zone id (pre-requesite)
+allowed_origins = ["https://cloudfront.example.com"]     
+
+# Cognito
+cognito_user = "Foo Bar"                                # Define Cognito user
+cognito_user_email = "foo.bar@gmail.com"                # Define Cognito user email
+cognito_user_password = "TempPassw0rD.!#foobar"         # Define Cognito user password

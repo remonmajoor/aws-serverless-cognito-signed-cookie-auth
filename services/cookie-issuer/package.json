@@ -1,7 +1,7 @@
 {
   "name": "static-website-in-s3-with-cloudfront",
   "version": "1.0.0",
-  "description": "Building the infrastructure for hosting a static website in S3 and deliver with cloudfront",
+  "description": "This project is an example of a serverless signed cookie example using Cognito for authentication.",
   "main": "index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -9,16 +9,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/remonmajoor/static-website-in-S3-with-cloudfront.git"
+    "url": "git+https://github.com/remonmajoor/aws-serverless-cognito-signed-cookie-auth.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/remonmajoor/static-website-in-S3-with-cloudfront/issues"
+    "url": "https://github.com/remonmajoor/aws-serverless-cognito-signed-cookie-auth/issues"
   },
-  "homepage": "https://github.com/remonmajoor/static-website-in-S3-with-cloudfront#readme",
+  "homepage": "https://github.com/remonmajoor/aws-serverless-cognito-signed-cookie-auth#readme",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.152",
     "@types/node": "^20.19.11",

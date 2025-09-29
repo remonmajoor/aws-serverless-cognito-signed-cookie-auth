@@ -3,12 +3,12 @@
     "target": "ES2022",
     "module": "commonjs",
     "moduleResolution": "node",
-    "rootDir": "src/lambda",
-    "outDir": "dist/lambda",
+    "rootDir": "./",
+    "outDir": "./dist/",
     "strict": true,
     "skipLibCheck": true,
     "types": ["node", "aws-lambda"],
     "noEmitOnError": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "cookie-issuer.ts"]
 }
