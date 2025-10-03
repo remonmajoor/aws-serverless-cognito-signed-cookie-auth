@@ -19,6 +19,10 @@ TFVARS          := env/prod.tfvars
 RESTRICTED  := restricted
 FRONTEND_ENV_FILE  := .env.production
 
+ifneq (,$(wildcard .env))
+include .env
+export $(shell sed -n 's/^\([^#][A-Z0-9_]*\)=.*/\1/p' .env)
+endif
 
 # -----------------------------
 # Frontend
